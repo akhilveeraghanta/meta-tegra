@@ -14,6 +14,7 @@ unpack_tar_in_tar() {
 
 python do_unpack() {
     src_uri = (d.getVar('SRC_URI') or "").split()
+    print(src_uri)
     rootdir = d.getVar('WORKDIR')
     p_dir = os.path.join(d.getVar('S'), 'patches')
     bb.utils.remove(p_dir, True)
