@@ -50,7 +50,8 @@ do_install() {
     install -m 0755 ${S}/bootloader/rollback/rollback_parser.py ${D}${BINDIR}
     install -m 0644 ${S}/bootloader/l4t_bup_gen.func ${D}${BINDIR}
 
-    install -m 0644 ${S}/bootloader/odmsign.func ${D}${BINDIR}
+    # NO SECURE BOOT PACAKGE FOR R35.X
+    # install -m 0644 ${S}/bootloader/odmsign.func ${D}${BINDIR}
 
     install -m 0755 ${S}/bootloader/mksparse ${D}${BINDIR}
     install -m 0755 ${S}/bootloader/mkbootimg ${D}${BINDIR}
