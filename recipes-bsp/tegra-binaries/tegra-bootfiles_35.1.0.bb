@@ -16,7 +16,7 @@ BOOTBINS:tegra194 = "\
     bpmp-2_t194.bin \
     camera-rtcpu-t194-rce.img \
     dram-ecc-t194.bin \
-    eks.img \
+    eks_t234.img \
     mb1_t194_prod.bin \
     nvdisp-init.bin \
     nvtboot_applet_t194.bin \
@@ -36,7 +36,7 @@ BOOTBINS:tegra234 = "\
     applet_t234.bin \
     ${BPF_FILE} \
     camera-rtcpu-t234-rce.img \
-    eks.img \
+    eks_t234.img \
     mb1_t234_prod.bin \
     mb2_t234.bin \
     mb2rf_t234.bin \
