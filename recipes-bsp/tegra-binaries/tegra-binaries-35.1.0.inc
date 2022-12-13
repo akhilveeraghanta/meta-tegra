@@ -2,7 +2,7 @@ LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://nv_tegra/LICENSE;md5=2cc00be68c1227a7c42ff3620ef75d05 \
                     file://nv_tegra/LICENSE.brcm_patchram_plus;md5=38fb07f0dacf4830bc57f40a0fb7532e"
 
-# NOTE: These are local files provided under the partner program
+# Local files
 SRC_URI = "file:///repo/Jetson_Linux_R35.1.0_aarch64.tbz2;name=l4t\
            file:///repo/secureboot_R35.1.0_aarch64.tbz2;name=sb\
            file:///repo/host_overlay_p3768_partner.tbz2;name=orin\
