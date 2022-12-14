@@ -270,6 +270,7 @@ else
     chip_sku=$CHIP_SKU
 fi
 
+# bpmp_t234-TE990M-A1_prod.bin
 case $chip_sku in
     00)
         ;;
@@ -284,6 +285,9 @@ case $chip_sku in
         exit 1
         ;;
 esac
+
+echo "SETTING BPDF FILE"
+echo $BPF_FILE
 
 if [ "$chip_sku" = "00" -o "$chip_sku" = "D0" ] &&
        echo "$FAB" | egrep -q '^(TS[123]|EB[123]|[012]00)$'; then
@@ -364,7 +368,7 @@ mb2_bootloader mb2_t234.bin; \
 xusb_fw xusb_t234_prod.bin; \
 dce_fw display-t234-dce.bin; \
 nvdec nvdec_t234_prod.fw; \
-bpmp_fw $BPF_FILE; \
+bpmp_fw bpmp_t234-TE990M-A1_prod.bin \
 bpmp_fw_dtb $BPFDTB_FILE; \
 sce_fw camera-rtcpu-sce.img; \
 rce_fw camera-rtcpu-t234-rce.img; \
