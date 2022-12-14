@@ -123,6 +123,10 @@ bootimg_from_bundled_initramfs() {
             if [ "$imageType" = "fitImage" ] ; then
                 continue
             fi
+            echo "Adding ${imageType} to initramfs"
+            echo ${imageType}
+            echo ${INITRAMFS_IMAGE}
+
             initramfs_base_name=${imageType}-${INITRAMFS_NAME}
             initramfs_symlink_name=${imageType}-${INITRAMFS_LINK_NAME}
             ${STAGING_BINDIR_NATIVE}/tegra-flash/mkbootimg \

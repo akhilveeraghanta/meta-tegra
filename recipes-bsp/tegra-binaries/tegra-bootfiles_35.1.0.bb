@@ -83,7 +83,10 @@ do_install() {
         install -m 0644 ${S}/bootloader/$f ${D}${datadir}/tegraflash
     done
     for f in ${BOOTBINS_MACHINE_SPECIFIC}; do
-        install -m 0644 ${S}/bootloader/${NVIDIA_BOARD}/$f ${D}${datadir}/tegraflash
+        # install -m 0644 ${S}/bootloader/${NVIDIA_BOARD}/$f ${D}${datadir}/tegraflash
+        # Why did they chuck everything in t186ref? (instead of t194, t234)
+        install -m 0644 ${S}/bootloader/t186ref/$f ${D}${datadir}/tegraflash
+
     done
     install -m 0644 ${PARTITION_FILE} ${D}${datadir}/tegraflash/${PARTITION_LAYOUT_TEMPLATE}
     [ -z "${ODMFUSE_FILE}" ] || install -m 0644 ${ODMFUSE_FILE} ${D}${datadir}/tegraflash/odmfuse_pkc_${MACHINE}.xml
