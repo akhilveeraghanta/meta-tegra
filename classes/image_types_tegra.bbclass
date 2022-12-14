@@ -232,7 +232,7 @@ BOOTFILES:tegra194 = "\
     adsp-fw.bin \
     bpmp-2_t194.bin \
     camera-rtcpu-t194-rce.img \
-    eks.img \
+    eks_t194.img \
     mb1_t194_prod.bin \
     nvtboot_applet_t194.bin \
     nvtboot_t194.bin \
@@ -252,7 +252,7 @@ BOOTFILES:tegra234 = "\
     applet_t234.bin \
     ${BPF_FILE} \
     camera-rtcpu-t234-rce.img \
-    eks.img \
+    eks_t234.img \
     mb1_t234_prod.bin \
     mb2_t234.bin \
     mb2rf_t234.bin \
