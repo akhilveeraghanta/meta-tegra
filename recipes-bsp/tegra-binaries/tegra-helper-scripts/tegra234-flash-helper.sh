@@ -368,7 +368,7 @@ mb2_bootloader mb2_t234.bin; \
 xusb_fw xusb_t234_prod.bin; \
 dce_fw display-t234-dce.bin; \
 nvdec nvdec_t234_prod.fw; \
-bpmp_fw bpmp_t234-TE990M-A1_prod.bin \
+bpmp_fw bpmp_t234-TE990M-A1_prod.bin; \
 bpmp_fw_dtb $BPFDTB_FILE; \
 sce_fw camera-rtcpu-sce.img; \
 rce_fw camera-rtcpu-t234-rce.img; \
