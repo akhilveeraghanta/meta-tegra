@@ -9,7 +9,6 @@ DEPENDS = "tegra-flashtools-native dtc-native tegra-flashvars lz4-native coreuti
 BCT_TEMPLATE ?= "${S}/bootloader/t186ref/BCT/${EMMC_BCT}"
 BCT_OVERRIDE_TEMPLATE ?= "${S}/bootloader/t186ref/BCT/${EMMC_BCT_OVERRIDE}"
 BOARD_CFG ?= "${S}/bootloader/${NVIDIA_BOARD}/cfg/${NVIDIA_BOARD_CFG}"
-PARTITION_FILE ?= "${S}/bootloader/${NVIDIA_BOARD}/cfg/${PARTITION_LAYOUT_TEMPLATE}"
 ODMFUSE_FILE ?= ""
 
 BOOTBINS:tegra194 = "\
