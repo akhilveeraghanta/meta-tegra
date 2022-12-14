@@ -272,7 +272,6 @@ BOOTFILES:tegra234 = "\
     tegrabl_carveout_id.h \
     pinctrl-tegra.h \
     tegra234-gpio.h \
-    gpio.h \
     readinfo_t234_min_prod.xml \
     camera-rtcpu-sce.img \
 "
