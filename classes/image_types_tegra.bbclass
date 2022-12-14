@@ -217,6 +217,7 @@ tegraflash_create_flash_config:tegra234() {
         -e"s,PSCFW,pscfw_t234_prod.bin," \
         -e"s,MCE_IMAGE,mce_flash_o10_cr_prod.bin," \
         -e"s,WB0FILE,sc7_t234_prod.bin," \
+        -e"s,BPFFILE,bpmp_t234-TE990M-A1_prod.bin," \
         -e"s,PSCRF_IMAGE,psc_rf_t234_prod.bin," \
         -e"s,MB2RF_IMAGE,mb2rf_t234.bin," \
         -e"s,TBCDTB-FILE,uefi_jetson_with_dtb.bin," \
