@@ -181,7 +181,7 @@ tegraflash_create_flash_config:tegra194() {
         -e"s,SPEFILE,spe_t194.bin," \
         -e"s,WB0BOOT,warmboot_t194_prod.bin," \
         -e"s,TOSFILE,${TOSIMGFILENAME}," \
-        -e"s,EKSFILE,eks.img," \
+        -e"s,EKSFILE,eks_194.img," \
         -e"s,RECNAME,recovery," -e"s,RECSIZE,66060288," -e"s,RECDTB-NAME,recovery-dtb," -e"s,BOOTCTRLNAME,kernel-bootctrl," \
         -e"/RECFILE/d" -e"/RECDTB-FILE/d" -e"/BOOTCTRL-FILE/d" \
         -e"s,APPSIZE,${ROOTFSPART_SIZE}," \
@@ -202,7 +202,7 @@ tegraflash_create_flash_config:tegra234() {
         -e"s,CAMERAFW,camera-rtcpu-t234-rce.img," \
         -e"s,SPEFILE,spe_t234.bin," \
         -e"s,TOSFILE,${TOSIMGFILENAME}," \
-        -e"s,EKSFILE,eks.img," \
+        -e"s,EKSFILE,eks_t234.img," \
         -e"s,RECNAME,recovery," -e"s,RECSIZE,66060288," -e"s,RECDTB-NAME,recovery-dtb," \
         -e"/RECFILE/d" -e"/RECDTB-FILE/d" -e"/BOOTCTRL-FILE/d" \
         -e"s,APPSIZE,${ROOTFSPART_SIZE}," \
