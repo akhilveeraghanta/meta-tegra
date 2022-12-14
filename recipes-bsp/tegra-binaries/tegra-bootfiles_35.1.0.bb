@@ -58,6 +58,7 @@ BOOTBINS:tegra234 = "\
     tegra234-gpio.h \
     readinfo_t234_min_prod.xml \
     camera-rtcpu-sce.img \
+    bpmp_t234-TE990M-A1_prod.bin \
 "
 
 BOOTBINS_MACHINE_SPECIFIC:tegra194 = ""
