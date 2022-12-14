@@ -83,7 +83,6 @@ do_install() {
         install -m 0644 ${S}/bootloader/$f ${D}${datadir}/tegraflash
     done
     for f in ${BOOTBINS_MACHINE_SPECIFIC}; do
-        # install -m 0644 ${S}/bootloader/${NVIDIA_BOARD}/$f ${D}${datadir}/tegraflash
         # Why did they chuck everything in t186ref? (instead of t194, t234)
         install -m 0644 ${S}/bootloader/t186ref/$f ${D}${datadir}/tegraflash
 
@@ -107,8 +106,9 @@ do_install:append:tegra194() {
 
 do_install:append:tegra234() {
     install -m 0644 ${S}/bootloader/tegra234-*.dts* ${D}${datadir}/tegraflash/
-    install -m 0644 ${S}/bootloader/${NVIDIA_BOARD}/tegra234-bpmp-*.dtb ${D}${datadir}/tegraflash/
-    install -m 0644 ${S}/bootloader/${NVIDIA_BOARD}/BCT/tegra234* ${D}${datadir}/tegraflash/
+    # Why did they chuck everything in t186ref??
+    install -m 0644 ${S}/bootloader/t186ref/tegra234-bpmp-*.dtb ${D}${datadir}/tegraflash/
+    install -m 0644 ${S}/bootloader/t186ref/BCT/tegra234* ${D}${datadir}/tegraflash/
 }
 
 PACKAGES = "${PN}-dev"
