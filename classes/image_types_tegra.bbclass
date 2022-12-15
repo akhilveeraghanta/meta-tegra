@@ -270,6 +270,7 @@ BOOTFILES:tegra234 = "\
     psc_rf_t234_prod.bin \
     nvdec_t234_prod.fw \
     xusb_t234_prod.bin \
+    bpmp_t234-TE990M-A1_prod.bin \
     tegrabl_carveout_id.h \
     pinctrl-tegra.h \
     tegra234-gpio.h \
