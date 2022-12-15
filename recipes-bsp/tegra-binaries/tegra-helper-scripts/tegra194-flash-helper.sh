@@ -347,7 +347,7 @@ bpmp_fw bpmp-2_t194.bin; \
 bpmp_fw_dtb $BPFDTB_FILE; \
 spe_fw spe_t194.bin; \
 tos tos-optee_t194.img; \
-eks eks.img; \
+eks eks_t194.img; \
 bootloader_dtb $dtb_file"
 
 bctargs="$UPHY_CONFIG $MINRATCHET_CONFIG \

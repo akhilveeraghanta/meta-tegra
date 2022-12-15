@@ -375,7 +375,7 @@ rce_fw camera-rtcpu-t234-rce.img; \
 ape_fw adsp-fw.bin; \
 spe_fw spe_t234.bin; \
 tlk tos-optee_t234.img; \
-eks eks.img"
+eks eks_t234.img"
 
 custinfo_args=
 if [ -f "$custinfo_out" ]; then
