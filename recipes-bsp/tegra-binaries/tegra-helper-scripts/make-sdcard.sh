@@ -21,14 +21,18 @@ Usage:
   $me [options] [--] <config-file> <output>
 
 Parameters:
-  config-file           Name of the flash.xml file with the SDcard partition definitions
-  output                Either the name of an SDcard device, or the name of an SDcard image file to create
+  config-file             Name of the flash.xml file with the SDcard partition definitions
+  output                  Either the name of an SDcard device, or the name of an SDcard image file to create
 
 Options:
-  -h                    Displays this usage information
-  -s size               Sets size of SDcard image when creating an image file (required)
-  -b basename           Base filename for SDcard image (required if no output specified)
-  -y                    Skip prompting for confirmation
+  -h                      Displays this usage information
+  -s size                 Sets size of SDcard image when creating an image file (required)
+  -b basename             Base filename for SDcard image (required if no output specified)
+  -y                      Skip prompting for confirmation
+  --honor-start-locations Use the start locations emitted by nvflashxmlparse
+  --no-final-part         Skip special handling of final partition
+  --serial-number <sn>    Select USB /dev/sd[a-z] device based on serial number
+  --keep-connection       Do not disconnect USB drive after use
 
 Confirmation is required if <output> is a device or if it is the name of
 a file that already exists.
@@ -66,6 +70,10 @@ compute_size() {
 find_finalpart() {
     local blksize partnumber partname partsize partfile partguid parttype partfilltoend
     local appidx pline i
+    if [ -n "$ignore_finalpart" ]; then
+	FINALPART=999
+	return 0
+    fi
     i=0
     for pline in "${PARTS[@]}"; do
 	eval "$pline"
@@ -87,25 +95,37 @@ find_finalpart() {
 }
 
 make_partitions() {
-    local blksize partnumber partname partsize partfile partguid parttype partfilltoend
-    local i pline
+    local blksize partnumber partname partsize partfile partguid parttype partfilltoend start_location
+    local i pline alignarg
+    if [ "$use_start_locations" = "yes" ]; then
+	alignarg="-a 1"
+    fi
     i=0
     for pline in "${PARTS[@]}"; do
 	if [ $i -ne $FINALPART ]; then
 	    eval "$pline"
 	    [ -n "$parttype" ] || parttype="8300"
-	    echo -n "$partname..."
-	    sgdisk "$output" -a 8 --new=$partnumber:0:+$partsize --typecode=$partnumber:$parttype -c $partnumber:$partname >/dev/null 2>&1
+	    if [ "$use_start_locations" != "yes" ]; then
+		start_location=0
+	    fi
+	    printf "  [%02d] name=%s start=%s size=%s sectors\n" $partnumber $partname $start_location $partsize
+	    sgdisk "$output" $alignarg --new=$partnumber:$start_location:+$partsize --typecode=$partnumber:8300 -c $partnumber:$partname >/dev/null 2>&1
 	fi
 	i=$(expr $i + 1)
     done
-    eval "${PARTS[$FINALPART]}"
-    [ -n "$parttype" ] || parttype="8300"
-    echo -n "$partname..."
-    if [ $partfilltoend -eq 1 ]; then
-	sgdisk "$output" -a 8 --largest-new=$partnumber --typecode=$partnumber:$parttype -c $partnumber:$partname >/dev/null 2>&1
-    else
-	sgdisk "$output" -a 8 --new=$partnumber:0:+$partsize --typecode=$partnumber:$parttype -c $partnumber:$partname >/dev/null 2>&1
+    if [ -z "$ignore_finalpart" ]; then
+	eval "${PARTS[$FINALPART]}"
+	[ -n "$parttype" ] || parttype="8300"
+	if [ "$use_start_locations" != "yes" ]; then
+	    start_location=0
+	fi
+	if [ $partfilltoend -eq 1 ]; then
+	    printf "  [%02d] name=%s (fills to end)\n" $partnumber $partname
+	    sgdisk "$output" $alignarg --largest-new=$partnumber --typecode=$partnumber:$parttype -c $partnumber:$partname >/dev/null 2>&1
+	else
+	    printf "  [%02d] name=%s start=%s size=%s sectors\n" $partnumber $partname $start_location $partsize
+	    sgdisk "$output" $alignarg --new=$partnumber:$start_location:+$partsize --typecode=$partnumber:$parttype -c $partnumber:$partname >/dev/null 2>&1
+	fi
     fi
 }
 
@@ -128,7 +148,7 @@ copy_to_device() {
 
 write_partitions_to_device() {
     local blksize partnumber partname partsize partfile partguid parttype partfilltoend
-    local i dest pline
+    local i dest pline destsize filesize
     i=0
     for pline in "${PARTS[@]}"; do
 	if [ $i -eq $FINALPART ]; then
@@ -146,30 +166,37 @@ write_partitions_to_device() {
 	    echo "ERR: cannot find file $partfile for partition $partnumber" >&2
 	    return 1
 	fi
+	filesize=$(stat -c "%s" "$partfile")
 	dest="/dev/$DEVNAME$PARTSEP$partnumber"
 	if [ ! -b "$dest" ]; then
 	    echo "ERR: cannot locate block device $dest" >&2
 	    return 1
 	fi
-	echo -n "$partname..."
+	destsize=$(blockdev --getsize64 "$dest")
+	echo "  Writing $partfile (size=$filesize) to $dest (size=$destsize)..."
 	if ! copy_to_device "$partfile" "$dest"; then
 	    echo "ERR: failed to write $partfile to $dest" >&2
 	    return 1
 	fi
 	i=$(expr $i + 1)
     done
+    if [ -n "$ignore_finalpart" ]; then
+	return 0
+    fi
     eval "${PARTS[$FINALPART]}"
     if [ -n "$partfile" ]; then
 	if [ ! -e "$partfile" ]; then
 	    echo "ERR: cannot find file $partfile for partition $partnumber" >&2
 	    return 1
 	fi
+	filesize=$(stat -c "%s" "$partfile")
 	dest="/dev/$DEVNAME$PARTSEP$partnumber"
 	if [ ! -b "$dest" ]; then
 	    echo "ERR: cannot locate block device $dest" >&2
 	    return 1
 	fi
-	echo -n "$partname..."
+	destsize=$(blockdev --getsize64 "$dest")
+	echo "  Writing $partfile (size=$filesize) to $dest (size=$destsize)..."
 	if ! copy_to_device "$partfile" "$dest"; then
 	    echo "ERR: failed to write $partfile to $dest" >&2
 	    return 1
@@ -196,7 +223,7 @@ write_partitions_to_image() {
 	    echo "ERR: cannot find file $partfile for partition $partnumber" >&2
 	    return 1
 	fi
-	echo -n "$partname..."
+	echo "  Writing $partfile..."
 	if ! dd if="$partfile" of="$output" conv=notrunc seek=${partstart[$partnumber]} status=none >/dev/null 2>&1; then
 	    echo "ERR: failed to write $partfile to $output (offset ${partstart[$partnumber]}" >&2
 	    return 1
@@ -225,7 +252,7 @@ confirm() {
     done
 }
 
-ARGS=$(getopt -o "yhs:b:" -n "$me" -- "$@")
+ARGS=$(getopt -l "serial-number:,keep-connection,no-final-part,honor-start-locations" -o "yhs:b:" -n "$me" -- "$@")
 if [ $? -ne 0 ]; then
     usage
     exit 1
@@ -237,25 +264,47 @@ unset ARGS
 preconfirmed=
 outsize=
 basename=
+wait_for_usb_device=
+keep_connection=
+serial_number=
+ignore_finalpart=
+use_start_locations=
 while true; do
     case "$1" in
-	'-h')
+	--serial-number)
+	    wait_for_usb_device=yes
+	    serial_number="$2"
+	    shift 2
+	    ;;
+	--keep-connection)
+	    keep_connection=yes
+	    shift
+	    ;;
+	--no-final-part)
+	    ignore_finalpart=yes
+	    shift
+	    ;;
+	--honor-start-locations)
+	    use_start_locations=yes
+	    shift
+	    ;;
+	-h)
 	    usage
 	    exit 0
 	    ;;
-	'-y')
+	-y)
 	    preconfirmed=yes
 	    shift
 	    ;;
-	'-s')
+	-s)
 	    outsize=$(compute_size "$2")
 	    shift 2
 	    ;;
-	'-b')
+	-b)
 	    basename="$2"
 	    shift 2
 	    ;;
-	'--')
+	--)
 	    shift
 	    break
 	    ;;
@@ -277,6 +326,26 @@ output="$2"
 if [ -z "$cfgfile" ]; then
     echo "ERR: missing flash config file parameter" >&2
     exit 1
+fi
+
+if [ "$wait_for_usb_device" = "yes" ]; then
+    echo -n "Looking for USB storage device from $serial_number..."
+    output=
+    while [ -z "$output" ]; do
+	for candidate in /dev/sd[a-z]; do
+	    [ -b "$candidate" ] || continue
+	    cand_sernum=$(udevadm info --query=property $candidate | grep '^ID_SERIAL_SHORT=' | cut -d= -f2)
+	    if [ "$cand_sernum" = "$serial_number" ]; then
+		echo "[$candidate]"
+		output="$candidate"
+		break
+	    fi
+	done
+	if [ -z "$output" ]; then
+	    sleep 1
+	    echo -n "."
+	fi
+    done
 fi
 
 if [ -z "$output" ]; then
@@ -315,13 +384,13 @@ else
     fi
 fi
 
-mapfile PARTS < <("$here/nvflashxmlparse" -t sdcard "$cfgfile")
+mapfile PARTS < <("$here/nvflashxmlparse" -t rootfs "$cfgfile")
 if [ ${#PARTS[@]} -eq 0 ]; then
     echo "No partition definitions found in $cfgfile" >&2
     exit 1
 fi
 
-echo -n "Init..."
+echo  "Creating partitions"
 [ -b "$output" ] || dd if=/dev/zero of="$output" bs=512 count=0 seek=$outsize status=none
 if ! sgdisk "$output" --clear --mbrtogpt --set-alignment=8 >/dev/null 2>&1; then
     echo "ERR: could not initialize GPT on $output" >&2
@@ -330,7 +399,10 @@ fi
 
 find_finalpart || exit 1
 make_partitions || exit 1
-echo "[OK]"
+if ! sgdisk "$output" --verify >/dev/null 2>&1; then
+    echo "ERR: verification failed for $output" >&2
+    exit 1
+fi
 if [ -b "$output" ]; then
     if ! udevadm settle >/dev/null 2>&1; then
 	sleep 1
@@ -350,7 +422,7 @@ fi
 if type -p bmaptool >/dev/null 2>&1; then
     HAVEBMAPTOOL=yes
 fi
-echo -n "Writing..."
+echo "Writing partitions"
 if [ -b "$output" ]; then
     write_partitions_to_device || exit 1
 else
@@ -361,4 +433,17 @@ else
     fi
 fi
 echo "[OK: $output]"
+if [ "$wait_for_usb_device" = "yes" -a "$keep_connection" != "yes" ]; then
+    echo "Disconnecting $output"
+    for tries in $(seq 1 30); do
+	if udisksctl power-off -b $output 2>/dev/null; then
+	    break
+	fi
+	sleep 1
+    done
+    if [ $tries -ge 30 ]; then
+        echo "WARN: failed to disconnect $output"
+    fi
+fi
+
 exit 0

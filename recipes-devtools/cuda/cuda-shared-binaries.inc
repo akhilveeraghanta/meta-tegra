@@ -12,8 +12,8 @@ SRC_COMMON_DEBS = "${@' '.join(['%s-${CUDA_VERSION_DASHED}_${PV}_${CUDA_DEB_PKGA
 
 SRC_URI[main.sha256sum] = "${MAINSUM}"
 SRC_URI[dev.sha256sum] = "${DEVSUM}"
-LICSUM = "f6f414061f1a6a38a40793c81dba0ca4cf76c3626b9afeaf5efa126b59884aa0"
-LICSUM:x86-64 = "bd038e4e8b6703c02026d303b4bbbfc9929f30f9c7e1dd5e0cdb8ebf214ea13e"
+LICSUM ?= "f6f414061f1a6a38a40793c81dba0ca4cf76c3626b9afeaf5efa126b59884aa0"
+LICSUM:x86-64 ?= "bd038e4e8b6703c02026d303b4bbbfc9929f30f9c7e1dd5e0cdb8ebf214ea13e"
 SRC_URI[lic.sha256sum] = "${LICSUM}"
 L4T_DEB_GROUP[lic] = "cuda-documentation"
 
@@ -23,19 +23,21 @@ inherit ${CUDA_DL_CLASS}
 
 DESCRIPTION = "CUDA package ${PN}"
 LICENSE = "Proprietary"
-LIC_FILES_CHKSUM = "file://usr/local/cuda-11.4/EULA.txt;md5=eabf6d52bdf58fa3d3cfe296cf1b17ee"
+LIC_FILES_CHKSUM ?= "file://usr/local/cuda-11.4/EULA.txt;md5=eabf6d52bdf58fa3d3cfe296cf1b17ee"
 
 DEPENDS ?= "cuda-cudart"
 CUDA_VERSION_DASHED = "${@d.getVar('CUDA_VERSION').replace('.','-')}"
 
 CUDA_PKGNAMES ?= "${@' '.join(['%s-${CUDA_VERSION_DASHED}_${PV}_${CUDA_DEB_PKGARCH}.deb' % pkg for pkg in d.getVar('CUDA_PKG').split()])}"
 
+CUDA_INSTALL_ARCH ?= "${HOST_ARCH}"
+
 do_compile() {
     rm -f ${B}/usr/local/cuda-${CUDA_VERSION}/lib64
     [ -L ${B}/usr/local/cuda-${CUDA_VERSION}/include ] && rm ${B}/usr/local/cuda-${CUDA_VERSION}/include
-    if [ -d ${B}/usr/local/cuda-${CUDA_VERSION}/targets/${HOST_ARCH}-${HOST_OS} ]; then
+    if [ -d ${B}/usr/local/cuda-${CUDA_VERSION}/targets/${CUDA_INSTALL_ARCH}-${HOST_OS} ]; then
         oldwd="$PWD"
-	cd ${B}/usr/local/cuda-${CUDA_VERSION}/targets/${HOST_ARCH}-${HOST_OS}
+	cd ${B}/usr/local/cuda-${CUDA_VERSION}/targets/${CUDA_INSTALL_ARCH}-${HOST_OS}
 	for d in *; do
 	    [ -d $d ] || continue
 	    if [ -d ${B}/usr/local/cuda-${CUDA_VERSION}/$d ]; then
@@ -46,13 +48,13 @@ do_compile() {
 	    fi
 	done
 	cd "$oldwd"
-	rmdir ${B}/usr/local/cuda-${CUDA_VERSION}/targets/${HOST_ARCH}-${HOST_OS}
+	rmdir ${B}/usr/local/cuda-${CUDA_VERSION}/targets/${CUDA_INSTALL_ARCH}-${HOST_OS}
 	rmdir ${B}/usr/local/cuda-${CUDA_VERSION}/targets
     fi
     if [ -d ${B}/usr/lib/pkgconfig ]; then
         for f in ${B}/usr/lib/pkgconfig/*; do
             sed -i -r -e's,^(libdir=.*/)lib[^/]*$,\1${baselib},' \
-		-e's,/targets/${HOST_ARCH}-${HOST_OS},,g' \
+		-e's,/targets/${CUDA_INSTALL_ARCH}-${HOST_OS},,g' \
                 -e's,^(libdir=.*/)lib[^/]*(/.*)$,\1${baselib}\2,' \
                 -e's!^(Libs:.*)!\1 -Wl,-rpath=$!' $f
             sed -i -re's,^(Libs:.*),\1{libdir},' $f
