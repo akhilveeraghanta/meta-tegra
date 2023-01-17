@@ -336,7 +336,7 @@ case $chip_sku in
     90|97|9E)
         BPF_FILE=$(echo "$BPF_FILE" | sed -e"s,T.*-A1,TA990SA-A1,")
         ;;
-    D0|D2)
+    D0|D2|D3)
         BPF_FILE=$(echo "$BPF_FILE" | sed -e"s,T.*-A1,TE990M-A1,")
         ;;
     *)

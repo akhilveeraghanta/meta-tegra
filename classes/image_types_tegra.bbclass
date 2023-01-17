@@ -558,6 +558,7 @@ END
     tegraflash_custom_post
     tegraflash_custom_sign_pkg
     tegraflash_finalize_pkg
+    cp .env.initrd env.initrd
     cd $oldwd
 }
 
