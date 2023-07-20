@@ -138,7 +138,7 @@ copy_to_device() {
     local src="$1"
     local dst="$2"
     if [ -z "$HAVEBMAPTOOL" ]; then
-	dd if="$src" of="$dst" conv=fsync status=none >/dev/null 2>&1 || return 1
+	dd if="$src" of="$dst" conv=fsync status=progress || return 1
 	return 0
     fi
     local bmap=$(mktemp)
@@ -259,7 +259,7 @@ write_partitions_to_image() {
 	    return 1
 	fi
 	echo "  Writing $partfile..."
-	if ! dd if="$partfile" of="$output" conv=notrunc seek=${partstart[$partnumber]} status=none >/dev/null 2>&1; then
+	if ! dd if="$partfile" of="$output" conv=notrunc seek=${partstart[$partnumber]} status=progress; then
 	    echo "ERR: failed to write $partfile to $output (offset ${partstart[$partnumber]}" >&2
 	    return 1
 	fi
@@ -426,7 +426,7 @@ if [ ${#PARTS[@]} -eq 0 ]; then
 fi
 
 echo  "Creating partitions"
-[ -b "$output" ] || dd if=/dev/zero of="$output" bs=512 count=0 seek=$outsize status=none
+[ -b "$output" ] || dd if=/dev/zero of="$output" bs=512 count=0 seek=$outsize status=progress
 if ! sgdisk "$output" --clear --mbrtogpt >/dev/null 2>&1; then
     if ! sgdisk "$output" --zap-all >/dev/null 2>&1; then
 	echo "ERR: could not initialize GPT on $output" >&2
